@@ -38,20 +38,21 @@ In this table, you can find the successive versions of this HAL-LL Driver compon
 
 It is **crucial** that you use a consistent set of versions for the CMSIS Core - CMSIS Device - HAL, as mentioned in this table.
 
-HAL Driver F4 | CMSIS Device F4 | CMSIS Core     | Was delivered in the full MCU package
-------------- | --------------- | -------------- | -------------------------------------
-Tag v1.7.6    | Tag v2.6.3      | Tag v5.4.0_cm4 | Tag v1.24.1 (and following, if any, till next tag)
-Tag v1.7.7    | Tag v2.6.4      | Tag v5.4.0_cm4 | Tag v1.24.2 (and following, if any, till next tag)
-Tag v1.7.8    | Tag v2.6.5      | Tag v5.4.0_cm4 | Tag v1.25.0 (and following, if any, till next tag)
-Tag v1.7.9    | Tag v2.6.5      | Tag v5.4.0_cm4 | Tag v1.25.1 (and following, if any, till next tag)
-Tag v1.7.10   | Tag v2.6.5      | Tag v5.4.0_cm4 | Tag v1.25.2 (and following, if any, till next tag)
-Tag v1.7.11   | Tag v2.6.6      | Tag v5.4.0_cm4 | Tag v1.26.0 (and following, if any, till next tag)
-Tag v1.7.12   | Tag v2.6.6      | Tag v5.4.0_cm4 | Tag v1.26.1 (and following, if any, till next tag)
+HAL Driver F4 | CMSIS Device F4 | CMSIS Core | Was delivered in the full MCU package
+------------- | --------------- | ---------- | -------------------------------------
+Tag v1.7.6 | Tag v2.6.3 | Tag v5.4.0_cm4 | Tag v1.24.1 (and following, if any, till HAL tag)
+Tag v1.7.7 | Tag v2.6.4 | Tag v5.4.0_cm4 | Tag v1.24.2 (and following, if any, till HAL tag)
+Tag v1.7.8 | Tag v2.6.5 | Tag v5.4.0_cm4 | Tag v1.25.0 (and following, if any, till HAL tag)
+Tag v1.7.9 | Tag v2.6.5 | Tag v5.4.0_cm4 | Tag v1.25.1 (and following, if any, till HAL tag)
+Tag v1.7.10| Tag v2.6.5 | Tag v5.4.0_cm4 | Tag v1.25.2 (and following, if any, till HAL tag)
+Tag v1.7.11| Tag v2.6.6 | Tag v5.4.0_cm4 | Tag v1.26.0 (and following, if any, till HAL tag)
+Tag v1.7.12| Tag v2.6.6 | Tag v5.4.0_cm4 | Tag v1.26.1 (and following, if any, till HAL tag)
+Tag v1.7.13| Tag v2.6.7 | Tag v5.4.0_cm4 | Tag v1.26.2 (and following, if any, till HAL tag)
 
 The full **STM32CubeF4** MCU package is available [here](https://github.com/STMicroelectronics/STM32CubeF4).
 
 ## Troubleshooting
 
-If you have any issue with the **Software content** of this repository, you can file an issue into the firmware repository [STM32CubeF4](https://github.com/STMicroelectronics/STM32CubeF4/issues/new/choose).
+If you have any issue with the **software content** of this repository, you can file an issue [here](https://github.com/STMicroelectronics/stm32f4xx_hal_driver/issues/new/choose).
 
 For any other question related to the product, the tools, the environment, you can submit a topic on the [ST Community/STM32 MCUs forum](https://community.st.com/s/group/0F90X000000AXsASAW/stm32-mcus).
