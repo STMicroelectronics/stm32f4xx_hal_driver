@@ -2146,15 +2146,15 @@ HAL_StatusTypeDef HAL_ETH_GetMACConfig(ETH_HandleTypeDef *heth, ETH_MACConfigTyp
   macconf->Watchdog = ((READ_BIT(heth->Instance->MACCR, ETH_MACCR_WD) >> 23) == 0U) ? ENABLE : DISABLE;
   macconf->AutomaticPadCRCStrip = ((READ_BIT(heth->Instance->MACCR, ETH_MACCR_APCS) >> 7) > 0U) ? ENABLE : DISABLE;
   macconf->InterPacketGapVal = READ_BIT(heth->Instance->MACCR, ETH_MACCR_IFG);
-  macconf->ChecksumOffload = ((READ_BIT(heth->Instance->MACCR, ETH_MACCR_IPCO) >> 27) > 0U) ? ENABLE : DISABLE;
+  macconf->ChecksumOffload = ((READ_BIT(heth->Instance->MACCR, ETH_MACCR_IPCO) >> 10U) > 0U) ? ENABLE : DISABLE;
 
 
   macconf->TransmitFlowControl = ((READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_TFCE) >> 1) > 0U) ? ENABLE : DISABLE;
   macconf->ZeroQuantaPause = ((READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_ZQPD) >> 7) == 0U) ? ENABLE : DISABLE;
   macconf->PauseLowThreshold = READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_PLT);
   macconf->PauseTime = (READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_PT) >> 16);
-  macconf->ReceiveFlowControl = (READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_RFCE) > 0U) ? ENABLE : DISABLE;
-  macconf->UnicastPausePacketDetect = ((READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_UPFD) >> 1) > 0U)
+  macconf->ReceiveFlowControl = ((READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_RFCE) >> 2U) > 0U) ? ENABLE : DISABLE;
+  macconf->UnicastPausePacketDetect = ((READ_BIT(heth->Instance->MACFCR, ETH_MACFCR_UPFD) >> 3U) > 0U)
                                       ? ENABLE : DISABLE;
 
   return HAL_OK;
@@ -2175,8 +2175,9 @@ HAL_StatusTypeDef HAL_ETH_GetDMAConfig(ETH_HandleTypeDef *heth, ETH_DMAConfigTyp
     return HAL_ERROR;
   }
 
-  dmaconf->DMAArbitration = READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_DSL) >> 2;
-  dmaconf->AddressAlignedBeats = ((READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_AAB) >> 12) > 0U) ? ENABLE : DISABLE;
+  dmaconf->DMAArbitration = READ_BIT(heth->Instance->DMABMR,
+                                    (ETH_DMAARBITRATION_RXPRIORTX | ETH_DMAARBITRATION_ROUNDROBIN_RXTX_4_1));
+  dmaconf->AddressAlignedBeats = ((READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_AAB) >> 25U) > 0U) ? ENABLE : DISABLE;
   dmaconf->BurstMode = READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_FB | ETH_DMABMR_MB);
   dmaconf->RxDMABurstLength = READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_RDP);
   dmaconf->TxDMABurstLength = READ_BIT(heth->Instance->DMABMR, ETH_DMABMR_PBL);
@@ -2670,11 +2671,11 @@ static void ETH_SetMACConfig(ETH_HandleTypeDef *heth,  ETH_MACConfigTypeDef *mac
   tmpreg1 &= ETH_MACFCR_CLEAR_MASK;
 
   tmpreg1 |= (uint32_t)((macconf->PauseTime << 16U) |
-                        (uint32_t)macconf->ZeroQuantaPause |
+                        ((uint32_t)((macconf->ZeroQuantaPause == DISABLE) ? 1U : 0U) << 7U) |
                         macconf->PauseLowThreshold |
-                        (uint32_t)macconf->UnicastSlowProtocolPacketDetect |
-                        (uint32_t)macconf->ReceiveFlowControl |
-                        (uint32_t)macconf->TransmitFlowControl);
+                        ((uint32_t)((macconf->UnicastPausePacketDetect == ENABLE) ? 1U : 0U) << 3U) |
+                        ((uint32_t)((macconf->ReceiveFlowControl == ENABLE) ? 1U : 0U) << 2U) |
+                        ((uint32_t)((macconf->TransmitFlowControl == ENABLE) ? 1U : 0U) << 1U));
 
   /* Write to ETHERNET MACFCR */
   (heth->Instance)->MACFCR = (uint32_t)tmpreg1;
@@ -2764,7 +2765,7 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth)
   macDefaultConf.TransmitFlowControl = DISABLE;
   macDefaultConf.Speed = ETH_SPEED_100M;
   macDefaultConf.DuplexMode = ETH_FULLDUPLEX_MODE;
-  macDefaultConf.UnicastSlowProtocolPacketDetect = DISABLE;
+  macDefaultConf.UnicastPausePacketDetect = DISABLE;
 
   /* MAC default configuration */
   ETH_SetMACConfig(heth, &macDefaultConf);

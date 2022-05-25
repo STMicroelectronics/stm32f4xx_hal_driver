@@ -276,9 +276,6 @@ typedef struct
   PreambleLength;              /*!< Selects or not the Preamble Length for Transmit packets (Full Duplex mode).
                                                            This parameter can be a value of @ref ETH_Preamble_Length */
 
-  FunctionalState
-  UnicastSlowProtocolPacketDetect;   /*!< Enable or disables the Detection of Slow Protocol Packets with unicast address. */
-
   FunctionalState  SlowProtocolDetect;          /*!< Enable or disables the Slow Protocol Detection. */
 
   FunctionalState  CRCCheckingRxPackets;        /*!< Enable or disables the CRC Checking for Received Packets. */
