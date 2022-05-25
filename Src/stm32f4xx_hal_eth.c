@@ -3091,6 +3091,12 @@ static void ETH_InitCallbacksToDefault(ETH_HandleTypeDef *heth)
   heth->ErrorCallback    = HAL_ETH_ErrorCallback;     /* Legacy weak ErrorCallback */
   heth->PMTCallback      = HAL_ETH_PMTCallback;       /* Legacy weak PMTCallback      */
   heth->WakeUpCallback   = HAL_ETH_WakeUpCallback;    /* Legacy weak WakeUpCallback   */
+  heth->rxLinkCallback   = HAL_ETH_RxLinkCallback;    /* Legacy weak RxLinkCallback   */
+  heth->txFreeCallback   = HAL_ETH_TxFreeCallback;    /* Legacy weak TxFreeCallback   */
+#ifdef HAL_ETH_USE_PTP
+  heth->txPtpCallback    = HAL_ETH_TxPtpCallback;     /* Legacy weak TxPtpCallback   */
+#endif /* HAL_ETH_USE_PTP */
+  heth->rxAllocateCallback = HAL_ETH_RxAllocateCallback; /* Legacy weak RxAllocateCallback */
 }
 #endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 
