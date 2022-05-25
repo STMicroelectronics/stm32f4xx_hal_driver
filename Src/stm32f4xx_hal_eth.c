@@ -837,7 +837,7 @@ HAL_StatusTypeDef HAL_ETH_Stop(ETH_HandleTypeDef *heth)
     /* Set the ETH peripheral state to BUSY */
     heth->gState = HAL_ETH_STATE_BUSY;
     /* Disable the DMA transmission */
-    CLEAR_BIT(heth->Instance->MACCR, ETH_MACCR_TE);
+    CLEAR_BIT(heth->Instance->DMAOMR, ETH_DMAOMR_ST);
 
     /* Disable the DMA reception */
     CLEAR_BIT(heth->Instance->DMAOMR, ETH_DMAOMR_SR);
@@ -895,7 +895,7 @@ HAL_StatusTypeDef HAL_ETH_Stop_IT(ETH_HandleTypeDef *heth)
                                     ETH_DMAIER_FBEIE | ETH_DMAIER_AISE | ETH_DMAIER_RBUIE));
 
     /* Disable the DMA transmission */
-    CLEAR_BIT(heth->Instance->MACCR, ETH_MACCR_TE);
+    CLEAR_BIT(heth->Instance->DMAOMR, ETH_DMAOMR_ST);
 
     /* Disable the DMA reception */
     CLEAR_BIT(heth->Instance->DMAOMR, ETH_DMAOMR_SR);
