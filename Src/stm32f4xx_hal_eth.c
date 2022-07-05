@@ -194,44 +194,44 @@
 /** @addtogroup ETH_Private_Constants ETH Private Constants
   * @{
   */
-#define ETH_MACCR_MASK       ((uint32_t)0xFFFB7F7CU)
-#define ETH_MACECR_MASK      ((uint32_t)0x3F077FFFU)
-#define ETH_MACFFR_MASK      ((uint32_t)0x800007FFU)
-#define ETH_MACWTR_MASK      ((uint32_t)0x0000010FU)
-#define ETH_MACTFCR_MASK     ((uint32_t)0xFFFF00F2U)
-#define ETH_MACRFCR_MASK     ((uint32_t)0x00000003U)
-#define ETH_MTLTQOMR_MASK    ((uint32_t)0x00000072U)
-#define ETH_MTLRQOMR_MASK    ((uint32_t)0x0000007BU)
-
-#define ETH_DMAMR_MASK       ((uint32_t)0x00007802U)
-#define ETH_DMASBMR_MASK     ((uint32_t)0x0000D001U)
-#define ETH_DMACCR_MASK      ((uint32_t)0x00013FFFU)
-#define ETH_DMACTCR_MASK     ((uint32_t)0x003F1010U)
-#define ETH_DMACRCR_MASK     ((uint32_t)0x803F0000U)
-#define ETH_MACPMTCSR_MASK   (ETH_MACPMTCSR_PD | ETH_MACPMTCSR_WFE | \
-                              ETH_MACPMTCSR_MPE | ETH_MACPMTCSR_GU)
+#define ETH_MACCR_MASK          0xFFFB7F7CU
+#define ETH_MACECR_MASK         0x3F077FFFU
+#define ETH_MACFFR_MASK         0x800007FFU
+#define ETH_MACWTR_MASK         0x0000010FU
+#define ETH_MACTFCR_MASK        0xFFFF00F2U
+#define ETH_MACRFCR_MASK        0x00000003U
+#define ETH_MTLTQOMR_MASK       0x00000072U
+#define ETH_MTLRQOMR_MASK       0x0000007BU
+							    
+#define ETH_DMAMR_MASK          0x00007802U
+#define ETH_DMASBMR_MASK        0x0000D001U
+#define ETH_DMACCR_MASK         0x00013FFFU
+#define ETH_DMACTCR_MASK        0x003F1010U
+#define ETH_DMACRCR_MASK        0x803F0000U
+#define ETH_MACPMTCSR_MASK      (ETH_MACPMTCSR_PD | ETH_MACPMTCSR_WFE | \
+                                 ETH_MACPMTCSR_MPE | ETH_MACPMTCSR_GU)
 
 /* Timeout values */
-#define ETH_SWRESET_TIMEOUT                 ((uint32_t)500U)
-#define ETH_MDIO_BUS_TIMEOUT                ((uint32_t)1000U)
+#define ETH_SWRESET_TIMEOUT     500U
+#define ETH_MDIO_BUS_TIMEOUT    1000U
 
 #define ETH_DMARXDESC_ERRORS_MASK ((uint32_t)(ETH_DMARXDESC_DBE | ETH_DMARXDESC_RE | \
                                               ETH_DMARXDESC_OE  | ETH_DMARXDESC_RWT |\
                                               ETH_DMARXDESC_LC | ETH_DMARXDESC_CE |\
                                               ETH_DMARXDESC_DE | ETH_DMARXDESC_IPV4HCE))
 
-#define ETH_MAC_US_TICK               ((uint32_t)1000000U)
+#define ETH_MAC_US_TICK         1000000U
 
-#define ETH_MACTSCR_MASK              ((uint32_t)0x0087FF2FU)
+#define ETH_MACTSCR_MASK        0x0087FF2FU
 
-#define ETH_PTPTSHR_VALUE            ((uint32_t)0xFFFFFFFFU)
-#define ETH_PTPTSLR_VALUE            ((uint32_t)0xBB9ACA00U)
+#define ETH_PTPTSHR_VALUE       0xFFFFFFFFU
+#define ETH_PTPTSLR_VALUE       0xBB9ACA00U
 
 /* Ethernet MACMIIAR register Mask */
-#define ETH_MACMIIAR_CR_MASK    ((uint32_t)0xFFFFFFE3U)
+#define ETH_MACMIIAR_CR_MASK    0xFFFFFFE3U
 
 /* Delay to wait when writing to some Ethernet registers */
-#define ETH_REG_WRITE_DELAY ((uint32_t)0x00000001U)
+#define ETH_REG_WRITE_DELAY     0x00000001U
 
 /* ETHERNET MACCR register Mask */
 #define ETH_MACCR_CLEAR_MASK    0xFF20810FU
@@ -243,8 +243,8 @@
 #define ETH_DMAOMR_CLEAR_MASK   0xF8DE3F23U
 
 /* ETHERNET MAC address offsets */
-#define ETH_MAC_ADDR_HBASE    (uint32_t)(ETH_MAC_BASE + 0x40U)  /* ETHERNET MAC address high offset */
-#define ETH_MAC_ADDR_LBASE    (uint32_t)(ETH_MAC_BASE + 0x44U)  /* ETHERNET MAC address low offset */
+#define ETH_MAC_ADDR_HBASE      (uint32_t)(ETH_MAC_BASE + 0x40U)  /* ETHERNET MAC address high offset */
+#define ETH_MAC_ADDR_LBASE      (uint32_t)(ETH_MAC_BASE + 0x44U)  /* ETHERNET MAC address low offset */
 
 /* ETHERNET DMA Rx descriptors Frame length Shift */
 #define  ETH_DMARXDESC_FRAMELENGTHSHIFT            16U
@@ -1229,11 +1229,6 @@ static void ETH_UpdateDescriptor(ETH_HandleTypeDef *heth)
 
     if (allocStatus != 0U)
     {
-      /* Ensure rest of descriptor is written to RAM before the OWN bit */
-      __DMB();
-
-      WRITE_REG(dmarxdesc->DESC0, ETH_DMARXDESC_OWN);
-
       if (heth->RxDescList.ItMode == 0U)
       {
         WRITE_REG(dmarxdesc->DESC1, ETH_DMARXDESC_DIC | ETH_RX_BUF_SIZE | ETH_DMARXDESC_RCH);
@@ -1242,6 +1237,14 @@ static void ETH_UpdateDescriptor(ETH_HandleTypeDef *heth)
       {
         WRITE_REG(dmarxdesc->DESC1, ETH_RX_BUF_SIZE | ETH_DMARXDESC_RCH);
       }
+
+      /* Before transferring the ownership to DMA, make sure that the RX descriptors bits writing
+         is fully performed.
+         The __DMB() instruction is added to avoid any potential compiler optimization that
+         may lead to abnormal behavior. */
+      __DMB();
+
+      SET_BIT(dmarxdesc->DESC0, ETH_DMARXDESC_OWN);
 
       /* Increment current rx descriptor index */
       INCR_RX_DESC_INDEX(descidx, 1U);
