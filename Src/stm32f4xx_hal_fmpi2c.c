@@ -3763,6 +3763,9 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Receive_DMA(FMPI2C_HandleTypeDef *hfmpi2
 HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2c, uint8_t *pData, uint16_t Size,
                                                 uint32_t XferOptions)
 {
+  /* Declaration of tmp to prevent undefined behavior of volatile usage */
+  FlagStatus tmp;
+
   /* Check the parameters */
   assert_param(IS_FMPI2C_TRANSFER_OPTIONS_REQUEST(XferOptions));
 
@@ -3822,7 +3825,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2c
     hfmpi2c->XferOptions = XferOptions;
     hfmpi2c->XferISR     = FMPI2C_Slave_ISR_IT;
 
-    if (FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_RECEIVE)
+    tmp = __HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_ADDR);
+    if ((FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_RECEIVE) && (tmp != RESET))
     {
       /* Clear ADDR flag after prepare the transfer parameters */
       /* This action will generate an acknowledge to the Master */
@@ -3859,6 +3863,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2c
 HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, uint8_t *pData, uint16_t Size,
                                                  uint32_t XferOptions)
 {
+  /* Declaration of tmp to prevent undefined behavior of volatile usage */
+  FlagStatus tmp;
   HAL_StatusTypeDef dmaxferstatus;
 
   /* Check the parameters */
@@ -4000,7 +4006,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2
       return HAL_ERROR;
     }
 
-    if (FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_RECEIVE)
+    tmp = __HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_ADDR);
+    if ((FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_RECEIVE) && (tmp != RESET))
     {
       /* Clear ADDR flag after prepare the transfer parameters */
       /* This action will generate an acknowledge to the Master */
@@ -4040,6 +4047,9 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2
 HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Receive_IT(FMPI2C_HandleTypeDef *hfmpi2c, uint8_t *pData, uint16_t Size,
                                                uint32_t XferOptions)
 {
+  /* Declaration of tmp to prevent undefined behavior of volatile usage */
+  FlagStatus tmp;
+
   /* Check the parameters */
   assert_param(IS_FMPI2C_TRANSFER_OPTIONS_REQUEST(XferOptions));
 
@@ -4099,7 +4109,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Receive_IT(FMPI2C_HandleTypeDef *hfmpi2c,
     hfmpi2c->XferOptions = XferOptions;
     hfmpi2c->XferISR     = FMPI2C_Slave_ISR_IT;
 
-    if (FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_TRANSMIT)
+    tmp = __HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_ADDR);
+    if ((FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_TRANSMIT) && (tmp != RESET))
     {
       /* Clear ADDR flag after prepare the transfer parameters */
       /* This action will generate an acknowledge to the Master */
@@ -4136,6 +4147,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Receive_IT(FMPI2C_HandleTypeDef *hfmpi2c,
 HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Receive_DMA(FMPI2C_HandleTypeDef *hfmpi2c, uint8_t *pData, uint16_t Size,
                                                 uint32_t XferOptions)
 {
+  /* Declaration of tmp to prevent undefined behavior of volatile usage */
+  FlagStatus tmp;
   HAL_StatusTypeDef dmaxferstatus;
 
   /* Check the parameters */
@@ -4277,7 +4290,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Slave_Seq_Receive_DMA(FMPI2C_HandleTypeDef *hfmpi2c
       return HAL_ERROR;
     }
 
-    if (FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_TRANSMIT)
+    tmp = __HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_ADDR);
+    if ((FMPI2C_GET_DIR(hfmpi2c) == FMPI2C_DIRECTION_TRANSMIT) && (tmp != RESET))
     {
       /* Clear ADDR flag after prepare the transfer parameters */
       /* This action will generate an acknowledge to the Master */
