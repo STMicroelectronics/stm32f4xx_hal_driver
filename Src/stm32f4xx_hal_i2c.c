@@ -383,6 +383,9 @@ static void I2C_MemoryTransmit_TXE_BTF(I2C_HandleTypeDef *hi2c);
 
 /* Private function to Convert Specific options */
 static void I2C_ConvertOtherXferOptions(I2C_HandleTypeDef *hi2c);
+
+/* Private function to flush DR register */
+static void I2C_Flush_DR(I2C_HandleTypeDef *hi2c);
 /**
   * @}
   */
@@ -939,6 +942,20 @@ HAL_StatusTypeDef HAL_I2C_UnRegisterAddrCallback(I2C_HandleTypeDef *hi2c)
 }
 
 #endif /* USE_HAL_I2C_REGISTER_CALLBACKS */
+
+/**
+  * @brief  I2C data register flush process.
+  * @param  hi2c I2C handle.
+  * @retval None
+  */
+static void I2C_Flush_DR(I2C_HandleTypeDef *hi2c)
+{
+  /* Write a dummy data in DR to clear TXE flag */
+  if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TXE) != RESET)
+  {
+    hi2c->Instance->DR = 0x00U;
+  }
+}
 
 /**
   * @}
@@ -5504,7 +5521,8 @@ static void I2C_MemoryTransmit_TXE_BTF(I2C_HandleTypeDef *hi2c)
   }
   else
   {
-    /* Do nothing */
+    /* Clear TXE and BTF flag */
+    I2C_Flush_DR(hi2c);
   }
 }
 
@@ -6366,6 +6384,9 @@ static void I2C_Slave_AF(I2C_HandleTypeDef *hi2c)
 
     /* Disable Acknowledge */
     CLEAR_BIT(hi2c->Instance->CR1, I2C_CR1_ACK);
+
+    /*Clear TXE flag*/
+    I2C_Flush_DR(hi2c);
 
 #if (USE_HAL_I2C_REGISTER_CALLBACKS == 1)
     hi2c->SlaveTxCpltCallback(hi2c);
