@@ -2056,7 +2056,7 @@ static HAL_StatusTypeDef SMBUS_MasterTransmit_BTF(SMBUS_HandleTypeDef *hsmbus)
         /* Generate Stop */
         SET_BIT(hsmbus->Instance->CR1, I2C_CR1_STOP);
 
-        hsmbus->PreviousState = HAL_SMBUS_STATE_READY;
+        hsmbus->PreviousState = SMBUS_STATE_NONE;
         hsmbus->State = HAL_SMBUS_STATE_READY;
         hsmbus->Mode = HAL_SMBUS_MODE_NONE;
 #if (USE_HAL_SMBUS_REGISTER_CALLBACKS == 1)
