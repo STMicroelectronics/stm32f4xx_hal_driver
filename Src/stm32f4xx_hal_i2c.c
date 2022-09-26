@@ -1374,6 +1374,13 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAd
 
         if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BTF) == SET)
         {
+
+          if (hi2c->XferSize == 3U)
+          {
+            /* Disable Acknowledge */
+            CLEAR_BIT(hi2c->Instance->CR1, I2C_CR1_ACK);
+          }
+
           /* Read data from DR */
           *hi2c->pBuffPtr = (uint8_t)hi2c->Instance->DR;
 
