@@ -6893,14 +6893,11 @@ static HAL_StatusTypeDef FMPI2C_IsErrorOccurred(FMPI2C_HandleTypeDef *hfmpi2c, u
             /* Check for the Timeout */
             if ((HAL_GetTick() - tickstart) > FMPI2C_TIMEOUT_STOPF)
             {
-              hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
-              hfmpi2c->State = HAL_FMPI2C_STATE_READY;
-              hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
-
-              /* Process Unlocked */
-              __HAL_UNLOCK(hfmpi2c);
+              error_code |=HAL_FMPI2C_ERROR_TIMEOUT;
 
               status = HAL_ERROR;
+
+              break;
             }
           }
         }
