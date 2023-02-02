@@ -6683,13 +6683,16 @@ static HAL_StatusTypeDef FMPI2C_WaitOnFlagUntilTimeout(FMPI2C_HandleTypeDef *hfm
     {
       if (((HAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
       {
-        hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
-        hfmpi2c->State = HAL_FMPI2C_STATE_READY;
-        hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
+        if ((__HAL_FMPI2C_GET_FLAG(hfmpi2c, Flag) == Status))
+        {
+          hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
+          hfmpi2c->State = HAL_FMPI2C_STATE_READY;
+          hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
 
-        /* Process Unlocked */
-        __HAL_UNLOCK(hfmpi2c);
-        return HAL_ERROR;
+          /* Process Unlocked */
+          __HAL_UNLOCK(hfmpi2c);
+          return HAL_ERROR;
+        }
       }
     }
   }
@@ -6720,14 +6723,17 @@ static HAL_StatusTypeDef FMPI2C_WaitOnTXISFlagUntilTimeout(FMPI2C_HandleTypeDef 
     {
       if (((HAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
       {
-        hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
-        hfmpi2c->State = HAL_FMPI2C_STATE_READY;
-        hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
+        if ((__HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_TXIS) == RESET))
+        {
+          hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
+          hfmpi2c->State = HAL_FMPI2C_STATE_READY;
+          hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
 
-        /* Process Unlocked */
-        __HAL_UNLOCK(hfmpi2c);
+          /* Process Unlocked */
+          __HAL_UNLOCK(hfmpi2c);
 
-        return HAL_ERROR;
+          return HAL_ERROR;
+        }
       }
     }
   }
@@ -6756,14 +6762,17 @@ static HAL_StatusTypeDef FMPI2C_WaitOnSTOPFlagUntilTimeout(FMPI2C_HandleTypeDef 
     /* Check for the Timeout */
     if (((HAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
     {
-      hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
-      hfmpi2c->State = HAL_FMPI2C_STATE_READY;
-      hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
+      if ((__HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_STOPF) == RESET))
+      {
+        hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
+        hfmpi2c->State = HAL_FMPI2C_STATE_READY;
+        hfmpi2c->Mode = HAL_FMPI2C_MODE_NONE;
 
-      /* Process Unlocked */
-      __HAL_UNLOCK(hfmpi2c);
+        /* Process Unlocked */
+        __HAL_UNLOCK(hfmpi2c);
 
-      return HAL_ERROR;
+        return HAL_ERROR;
+      }
     }
   }
   return HAL_OK;
@@ -6830,13 +6839,16 @@ static HAL_StatusTypeDef FMPI2C_WaitOnRXNEFlagUntilTimeout(FMPI2C_HandleTypeDef 
     /* Check for the Timeout */
     if (((HAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
     {
-      hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
-      hfmpi2c->State = HAL_FMPI2C_STATE_READY;
+      if ((__HAL_FMPI2C_GET_FLAG(hfmpi2c, FMPI2C_FLAG_RXNE) == RESET))
+      {
+        hfmpi2c->ErrorCode |= HAL_FMPI2C_ERROR_TIMEOUT;
+        hfmpi2c->State = HAL_FMPI2C_STATE_READY;
 
-      /* Process Unlocked */
-      __HAL_UNLOCK(hfmpi2c);
+        /* Process Unlocked */
+        __HAL_UNLOCK(hfmpi2c);
 
-      return HAL_ERROR;
+        return HAL_ERROR;
+      }
     }
   }
   return HAL_OK;
