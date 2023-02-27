@@ -856,6 +856,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
         if ((((HAL_GetTick() - tickstart) >=  Timeout) && (Timeout != HAL_MAX_DELAY)) || (Timeout == 0U))
         {
           errorcode = HAL_TIMEOUT;
+          hspi->State = HAL_SPI_STATE_READY;
           goto error;
         }
       }
@@ -885,6 +886,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
         if ((((HAL_GetTick() - tickstart) >=  Timeout) && (Timeout != HAL_MAX_DELAY)) || (Timeout == 0U))
         {
           errorcode = HAL_TIMEOUT;
+          hspi->State = HAL_SPI_STATE_READY;
           goto error;
         }
       }
@@ -914,9 +916,12 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
   {
     errorcode = HAL_ERROR;
   }
+  else
+  {
+    hspi->State = HAL_SPI_STATE_READY;
+  }
 
 error:
-  hspi->State = HAL_SPI_STATE_READY;
   /* Process Unlocked */
   __HAL_UNLOCK(hspi);
   return errorcode;
@@ -939,6 +944,12 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
   uint32_t tickstart;
   HAL_StatusTypeDef errorcode = HAL_OK;
 
+  if (hspi->State != HAL_SPI_STATE_READY)
+  {
+    errorcode = HAL_BUSY;
+    goto error;
+  }
+
   if ((hspi->Init.Mode == SPI_MODE_MASTER) && (hspi->Init.Direction == SPI_DIRECTION_2LINES))
   {
     hspi->State = HAL_SPI_STATE_BUSY_RX;
@@ -951,12 +962,6 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
 
   /* Init tickstart for timeout management*/
   tickstart = HAL_GetTick();
-
-  if (hspi->State != HAL_SPI_STATE_READY)
-  {
-    errorcode = HAL_BUSY;
-    goto error;
-  }
 
   if ((pData == NULL) || (Size == 0U))
   {
@@ -1023,6 +1028,7 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
         if ((((HAL_GetTick() - tickstart) >=  Timeout) && (Timeout != HAL_MAX_DELAY)) || (Timeout == 0U))
         {
           errorcode = HAL_TIMEOUT;
+          hspi->State = HAL_SPI_STATE_READY;
           goto error;
         }
       }
@@ -1046,6 +1052,7 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
         if ((((HAL_GetTick() - tickstart) >=  Timeout) && (Timeout != HAL_MAX_DELAY)) || (Timeout == 0U))
         {
           errorcode = HAL_TIMEOUT;
+          hspi->State = HAL_SPI_STATE_READY;
           goto error;
         }
       }
@@ -1112,9 +1119,12 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
   {
     errorcode = HAL_ERROR;
   }
+  else
+  {
+    hspi->State = HAL_SPI_STATE_READY;
+  }
 
 error :
-  hspi->State = HAL_SPI_STATE_READY;
   __HAL_UNLOCK(hspi);
   return errorcode;
 }
@@ -1246,6 +1256,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       if (((HAL_GetTick() - tickstart) >=  Timeout) && (Timeout != HAL_MAX_DELAY))
       {
         errorcode = HAL_TIMEOUT;
+        hspi->State = HAL_SPI_STATE_READY;
         goto error;
       }
     }
@@ -1291,6 +1302,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       if ((((HAL_GetTick() - tickstart) >=  Timeout) && ((Timeout != HAL_MAX_DELAY))) || (Timeout == 0U))
       {
         errorcode = HAL_TIMEOUT;
+        hspi->State = HAL_SPI_STATE_READY;
         goto error;
       }
     }
@@ -1339,8 +1351,16 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
     __HAL_SPI_CLEAR_OVRFLAG(hspi);
   }
 
+  if (hspi->ErrorCode != HAL_SPI_ERROR_NONE)
+  {
+    errorcode = HAL_ERROR;
+  }
+  else
+  {
+    hspi->State = HAL_SPI_STATE_READY;
+  }
+  
 error :
-  hspi->State = HAL_SPI_STATE_READY;
   __HAL_UNLOCK(hspi);
   return errorcode;
 }
@@ -1442,6 +1462,13 @@ HAL_StatusTypeDef HAL_SPI_Receive_IT(SPI_HandleTypeDef *hspi, uint8_t *pData, ui
 {
   HAL_StatusTypeDef errorcode = HAL_OK;
 
+
+  if (hspi->State != HAL_SPI_STATE_READY)
+  {
+    errorcode = HAL_BUSY;
+    goto error;
+  }
+
   if ((hspi->Init.Direction == SPI_DIRECTION_2LINES) && (hspi->Init.Mode == SPI_MODE_MASTER))
   {
     hspi->State = HAL_SPI_STATE_BUSY_RX;
@@ -1451,12 +1478,6 @@ HAL_StatusTypeDef HAL_SPI_Receive_IT(SPI_HandleTypeDef *hspi, uint8_t *pData, ui
 
   /* Process Locked */
   __HAL_LOCK(hspi);
-
-  if (hspi->State != HAL_SPI_STATE_READY)
-  {
-    errorcode = HAL_BUSY;
-    goto error;
-  }
 
   if ((pData == NULL) || (Size == 0U))
   {
@@ -1695,7 +1716,6 @@ HAL_StatusTypeDef HAL_SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, 
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
     errorcode = HAL_ERROR;
 
-    hspi->State = HAL_SPI_STATE_READY;
     goto error;
   }
 
@@ -1734,7 +1754,13 @@ HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, u
 
   /* Check rx dma handle */
   assert_param(IS_SPI_DMA_HANDLE(hspi->hdmarx));
-
+  
+  if (hspi->State != HAL_SPI_STATE_READY)
+  {
+    errorcode = HAL_BUSY;
+    goto error;
+  }
+  
   if ((hspi->Init.Direction == SPI_DIRECTION_2LINES) && (hspi->Init.Mode == SPI_MODE_MASTER))
   {
     hspi->State = HAL_SPI_STATE_BUSY_RX;
@@ -1748,12 +1774,6 @@ HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, u
 
   /* Process Locked */
   __HAL_LOCK(hspi);
-
-  if (hspi->State != HAL_SPI_STATE_READY)
-  {
-    errorcode = HAL_BUSY;
-    goto error;
-  }
 
   if ((pData == NULL) || (Size == 0U))
   {
@@ -1810,7 +1830,6 @@ HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, u
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
     errorcode = HAL_ERROR;
 
-    hspi->State = HAL_SPI_STATE_READY;
     goto error;
   }
 
@@ -1932,7 +1951,6 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
     errorcode = HAL_ERROR;
 
-    hspi->State = HAL_SPI_STATE_READY;
     goto error;
   }
 
@@ -1954,7 +1972,6 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
     errorcode = HAL_ERROR;
 
-    hspi->State = HAL_SPI_STATE_READY;
     goto error;
   }
 
