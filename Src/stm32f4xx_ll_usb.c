@@ -346,9 +346,6 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
   /* Restart the Phy Clock */
   USBx_PCGCCTL = 0U;
 
-  /* Device mode configuration */
-  USBx_DEVICE->DCFG |= DCFG_FRAME_INTERVAL_80;
-
   if (cfg.phy_itface == USB_OTG_ULPI_PHY)
   {
     if (cfg.speed == USBD_HS_SPEED)
