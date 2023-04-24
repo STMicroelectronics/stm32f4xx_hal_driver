@@ -1123,6 +1123,7 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit(FMPI2C_HandleTypeDef *hfmpi2c, uint
                                           uint16_t Size, uint32_t Timeout)
 {
   uint32_t tickstart;
+  uint32_t xfermode;
 
   if (hfmpi2c->State == HAL_FMPI2C_STATE_READY)
   {
@@ -1146,19 +1147,40 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit(FMPI2C_HandleTypeDef *hfmpi2c, uint
     hfmpi2c->XferCount = Size;
     hfmpi2c->XferISR   = NULL;
 
-    /* Send Slave Address */
-    /* Set NBYTES to write and reload if hfmpi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
     if (hfmpi2c->XferCount > MAX_NBYTE_SIZE)
     {
       hfmpi2c->XferSize = MAX_NBYTE_SIZE;
-      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, FMPI2C_RELOAD_MODE,
-                         FMPI2C_GENERATE_START_WRITE);
+      xfermode = FMPI2C_RELOAD_MODE;
     }
     else
     {
       hfmpi2c->XferSize = hfmpi2c->XferCount;
-      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, FMPI2C_AUTOEND_MODE,
-                         FMPI2C_GENERATE_START_WRITE);
+      xfermode = FMPI2C_AUTOEND_MODE;
+    }
+
+    if (hfmpi2c->XferSize > 0U)
+    {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
+
+      hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
+
+      /* Send Slave Address */
+      /* Set NBYTES to write and reload if hfmpi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)(hfmpi2c->XferSize + 1U), xfermode,
+                            FMPI2C_GENERATE_START_WRITE);
+    }
+    else
+    {
+      /* Send Slave Address */
+      /* Set NBYTES to write and reload if hfmpi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode,
+                            FMPI2C_GENERATE_START_WRITE);
     }
 
     while (hfmpi2c->XferCount > 0U)
@@ -1667,7 +1689,26 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2c, u
 
     /* Send Slave Address */
     /* Set NBYTES to write and reload if hfmpi2c->XferCount > MAX_NBYTE_SIZE */
-    FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, FMPI2C_GENERATE_START_WRITE);
+        if (hfmpi2c->XferSize > 0U)
+    {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
+
+      hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
+
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)(hfmpi2c->XferSize + 1U), xfermode,
+                            FMPI2C_GENERATE_START_WRITE);
+    }
+    else
+    {
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode,
+                            FMPI2C_GENERATE_START_WRITE);
+    }
 
     /* Process Unlocked */
     __HAL_UNLOCK(hfmpi2c);
@@ -1876,6 +1917,7 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, 
 {
   uint32_t xfermode;
   HAL_StatusTypeDef dmaxferstatus;
+  uint32_t sizetoxfer = 0U;
 
   if (hfmpi2c->State == HAL_FMPI2C_STATE_READY)
   {
@@ -1910,6 +1952,20 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, 
 
     if (hfmpi2c->XferSize > 0U)
     {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
+
+      sizetoxfer = hfmpi2c->XferSize;
+      hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
+    }
+
+    if (hfmpi2c->XferSize > 0U)
+    {
       if (hfmpi2c->hdmatx != NULL)
       {
         /* Set the FMPI2C DMA transfer complete callback */
@@ -1923,8 +1979,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, 
         hfmpi2c->hdmatx->XferAbortCallback = NULL;
 
         /* Enable the DMA stream */
-        dmaxferstatus = HAL_DMA_Start_IT(hfmpi2c->hdmatx, (uint32_t)pData, (uint32_t)&hfmpi2c->Instance->TXDR,
-                                         hfmpi2c->XferSize);
+        dmaxferstatus = HAL_DMA_Start_IT(hfmpi2c->hdmatx, (uint32_t)hfmpi2c->pBuffPtr,
+                                         (uint32_t)&hfmpi2c->Instance->TXDR, hfmpi2c->XferSize);
       }
       else
       {
@@ -1945,7 +2001,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, 
       {
         /* Send Slave Address */
         /* Set NBYTES to write and reload if hfmpi2c->XferCount > MAX_NBYTE_SIZE and generate RESTART */
-        FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, FMPI2C_GENERATE_START_WRITE);
+        FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)(hfmpi2c->XferSize + 1U),
+                              xfermode, FMPI2C_GENERATE_START_WRITE);
 
         /* Update XferCount value */
         hfmpi2c->XferCount -= hfmpi2c->XferSize;
@@ -1984,8 +2041,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi2c, 
 
       /* Send Slave Address */
       /* Set NBYTES to write and generate START condition */
-      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, FMPI2C_AUTOEND_MODE,
-                         FMPI2C_GENERATE_START_WRITE);
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)sizetoxfer, FMPI2C_AUTOEND_MODE,
+                            FMPI2C_GENERATE_START_WRITE);
 
       /* Process Unlocked */
       __HAL_UNLOCK(hfmpi2c);
@@ -3260,6 +3317,7 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2
 {
   uint32_t xfermode;
   uint32_t xferrequest = FMPI2C_GENERATE_START_WRITE;
+  uint32_t sizetoxfer = 0U;
 
   /* Check the parameters */
   assert_param(IS_FMPI2C_TRANSFER_OPTIONS_REQUEST(XferOptions));
@@ -3291,6 +3349,21 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2
       xfermode = hfmpi2c->XferOptions;
     }
 
+    if ((hfmpi2c->XferSize > 0U) && ((XferOptions == FMPI2C_FIRST_FRAME) || \
+                                     (XferOptions == FMPI2C_FIRST_AND_LAST_FRAME)))
+    {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
+
+      sizetoxfer = hfmpi2c->XferSize;
+      hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
+    }
+
     /* If transfer direction not change and there is no request to start another frame,
        do not generate Restart Condition */
     /* Mean Previous state is same as current state */
@@ -3312,7 +3385,14 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_IT(FMPI2C_HandleTypeDef *hfmpi2
     }
 
     /* Send Slave Address and set NBYTES to write */
-    FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, xferrequest);
+    if ((XferOptions == FMPI2C_FIRST_FRAME) || (XferOptions == FMPI2C_FIRST_AND_LAST_FRAME))
+    {
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)sizetoxfer, xfermode, xferrequest);
+    }
+    else
+    {
+      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, xferrequest);
+    }
 
     /* Process Unlocked */
     __HAL_UNLOCK(hfmpi2c);
@@ -3352,6 +3432,7 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi
   uint32_t xfermode;
   uint32_t xferrequest = FMPI2C_GENERATE_START_WRITE;
   HAL_StatusTypeDef dmaxferstatus;
+  uint32_t sizetoxfer = 0U;
 
   /* Check the parameters */
   assert_param(IS_FMPI2C_TRANSFER_OPTIONS_REQUEST(XferOptions));
@@ -3381,6 +3462,21 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi
     {
       hfmpi2c->XferSize = hfmpi2c->XferCount;
       xfermode = hfmpi2c->XferOptions;
+    }
+
+    if ((hfmpi2c->XferSize > 0U) && ((XferOptions == FMPI2C_FIRST_FRAME) || \
+                                     (XferOptions == FMPI2C_FIRST_AND_LAST_FRAME)))
+    {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
+
+      sizetoxfer = hfmpi2c->XferSize;
+      hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
     }
 
     /* If transfer direction not change and there is no request to start another frame,
@@ -3418,8 +3514,8 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi
         hfmpi2c->hdmatx->XferAbortCallback = NULL;
 
         /* Enable the DMA stream */
-        dmaxferstatus = HAL_DMA_Start_IT(hfmpi2c->hdmatx, (uint32_t)pData, (uint32_t)&hfmpi2c->Instance->TXDR,
-                                         hfmpi2c->XferSize);
+        dmaxferstatus = HAL_DMA_Start_IT(hfmpi2c->hdmatx, (uint32_t)hfmpi2c->pBuffPtr,
+                                         (uint32_t)&hfmpi2c->Instance->TXDR, hfmpi2c->XferSize);
       }
       else
       {
@@ -3439,7 +3535,14 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi
       if (dmaxferstatus == HAL_OK)
       {
         /* Send Slave Address and set NBYTES to write */
-        FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, xferrequest);
+        if ((XferOptions == FMPI2C_FIRST_FRAME) || (XferOptions == FMPI2C_FIRST_AND_LAST_FRAME))
+        {
+          FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)sizetoxfer, xfermode, xferrequest);
+        }
+        else
+        {
+          FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, xferrequest);
+        }
 
         /* Update XferCount value */
         hfmpi2c->XferCount -= hfmpi2c->XferSize;
@@ -3478,8 +3581,14 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Transmit_DMA(FMPI2C_HandleTypeDef *hfmpi
 
       /* Send Slave Address */
       /* Set NBYTES to write and generate START condition */
-      FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, FMPI2C_AUTOEND_MODE,
-                         FMPI2C_GENERATE_START_WRITE);
+      if ((XferOptions == FMPI2C_FIRST_FRAME) || (XferOptions == FMPI2C_FIRST_AND_LAST_FRAME))
+      {
+        FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)sizetoxfer, xfermode, xferrequest);
+      }
+      else
+      {
+        FMPI2C_TransferConfig(hfmpi2c, DevAddress, (uint8_t)hfmpi2c->XferSize, xfermode, xferrequest);
+      }
 
       /* Process Unlocked */
       __HAL_UNLOCK(hfmpi2c);
@@ -4789,17 +4898,22 @@ static HAL_StatusTypeDef FMPI2C_Master_ISR_IT(struct __FMPI2C_HandleTypeDef *hfm
     hfmpi2c->XferSize--;
     hfmpi2c->XferCount--;
   }
-  else if ((FMPI2C_CHECK_FLAG(tmpITFlags, FMPI2C_FLAG_TXIS) != RESET) && \
-           (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TXI) != RESET))
+  else if ((FMPI2C_CHECK_FLAG(tmpITFlags, FMPI2C_FLAG_TC) == RESET) && \
+           ((FMPI2C_CHECK_FLAG(tmpITFlags, FMPI2C_FLAG_TXIS) != RESET) && \
+            (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TXI) != RESET)))
   {
     /* Write data to TXDR */
-    hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
+    if (hfmpi2c->XferCount != 0U)
+    {
+      /* Write data to TXDR */
+      hfmpi2c->Instance->TXDR = *hfmpi2c->pBuffPtr;
 
-    /* Increment Buffer pointer */
-    hfmpi2c->pBuffPtr++;
+      /* Increment Buffer pointer */
+      hfmpi2c->pBuffPtr++;
 
-    hfmpi2c->XferSize--;
-    hfmpi2c->XferCount--;
+      hfmpi2c->XferSize--;
+      hfmpi2c->XferCount--;
+    }
   }
   else if ((FMPI2C_CHECK_FLAG(tmpITFlags, FMPI2C_FLAG_TCR) != RESET) && \
            (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TCI) != RESET))
