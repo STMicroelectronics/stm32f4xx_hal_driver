@@ -940,6 +940,7 @@ HAL_StatusTypeDef HAL_FMPSMBUS_Master_Transmit_IT(FMPSMBUS_HandleTypeDef *hfmpsm
                                                uint8_t *pData, uint16_t Size, uint32_t XferOptions)
 {
   uint32_t tmp;
+  uint32_t sizetoxfer = 0U;
 
   /* Check the parameters */
   assert_param(IS_FMPSMBUS_TRANSFER_OPTIONS_REQUEST(XferOptions));
@@ -972,11 +973,28 @@ HAL_StatusTypeDef HAL_FMPSMBUS_Master_Transmit_IT(FMPSMBUS_HandleTypeDef *hfmpsm
       hfmpsmbus->XferSize = Size;
     }
 
+    sizetoxfer = hfmpsmbus->XferSize;
+    if ((hfmpsmbus->XferSize > 0U) && ((XferOptions == FMPSMBUS_FIRST_FRAME) ||
+                                       (XferOptions == FMPSMBUS_FIRST_AND_LAST_FRAME_NO_PEC) ||
+                                       (XferOptions == FMPSMBUS_FIRST_FRAME_WITH_PEC) ||
+                                       (XferOptions == FMPSMBUS_FIRST_AND_LAST_FRAME_WITH_PEC)))
+    {
+      /* Preload TX register */
+      /* Write data to TXDR */
+      hfmpsmbus->Instance->TXDR = *hfmpsmbus->pBuffPtr;
+
+      /* Increment Buffer pointer */
+      hfmpsmbus->pBuffPtr++;
+
+      hfmpsmbus->XferCount--;
+      hfmpsmbus->XferSize--;
+    }
+
     /* Send Slave Address */
     /* Set NBYTES to write and reload if size > MAX_NBYTE_SIZE and generate RESTART */
-    if ((hfmpsmbus->XferSize < hfmpsmbus->XferCount) && (hfmpsmbus->XferSize == MAX_NBYTE_SIZE))
+    if ((sizetoxfer < hfmpsmbus->XferCount) && (sizetoxfer == MAX_NBYTE_SIZE))
     {
-      FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)hfmpsmbus->XferSize,
+      FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)sizetoxfer,
                            FMPSMBUS_RELOAD_MODE | (hfmpsmbus->XferOptions & FMPSMBUS_SENDPEC_MODE),
                            FMPSMBUS_GENERATE_START_WRITE);
     }
@@ -991,7 +1009,7 @@ HAL_StatusTypeDef HAL_FMPSMBUS_Master_Transmit_IT(FMPSMBUS_HandleTypeDef *hfmpsm
       if ((hfmpsmbus->PreviousState == HAL_FMPSMBUS_STATE_MASTER_BUSY_TX) && \
           (IS_FMPSMBUS_TRANSFER_OTHER_OPTIONS_REQUEST(tmp) == 0))
       {
-        FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)hfmpsmbus->XferSize, hfmpsmbus->XferOptions,
+        FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)sizetoxfer, hfmpsmbus->XferOptions,
                              FMPSMBUS_NO_STARTSTOP);
       }
       /* Else transfer direction change, so generate Restart with new transfer direction */
@@ -1001,7 +1019,7 @@ HAL_StatusTypeDef HAL_FMPSMBUS_Master_Transmit_IT(FMPSMBUS_HandleTypeDef *hfmpsm
         FMPSMBUS_ConvertOtherXferOptions(hfmpsmbus);
 
         /* Handle Transfer */
-        FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)hfmpsmbus->XferSize,
+        FMPSMBUS_TransferConfig(hfmpsmbus, DevAddress, (uint8_t)sizetoxfer,
                              hfmpsmbus->XferOptions,
                              FMPSMBUS_GENERATE_START_WRITE);
       }
