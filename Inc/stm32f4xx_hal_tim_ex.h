@@ -74,9 +74,8 @@ typedef struct
 #if defined (TIM2)
 #if defined(TIM8)
 #define TIM_TIM2_TIM8_TRGO                     0x00000000U                              /*!< TIM2 ITR1 is connected to TIM8 TRGO */
-#else
-#define TIM_TIM2_ETH_PTP                       TIM_OR_ITR1_RMP_0                        /*!< TIM2 ITR1 is connected to PTP trigger output */
 #endif /*  TIM8 */
+#define TIM_TIM2_ETH_PTP                       TIM_OR_ITR1_RMP_0                        /*!< TIM2 ITR1 is connected to PTP trigger output */
 #define TIM_TIM2_USBFS_SOF                     TIM_OR_ITR1_RMP_1                        /*!< TIM2 ITR1 is connected to OTG FS SOF */
 #define TIM_TIM2_USBHS_SOF                     (TIM_OR_ITR1_RMP_1 | TIM_OR_ITR1_RMP_0)  /*!< TIM2 ITR1 is connected to OTG HS SOF */
 #endif /* TIM2 */
