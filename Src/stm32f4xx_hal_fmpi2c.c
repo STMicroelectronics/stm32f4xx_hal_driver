@@ -2733,6 +2733,7 @@ HAL_StatusTypeDef HAL_FMPI2C_Mem_Write_IT(FMPI2C_HandleTypeDef *hfmpi2c, uint16_
     hfmpi2c->ErrorCode   = HAL_FMPI2C_ERROR_NONE;
 
     /* Prepare transfer parameters */
+    hfmpi2c->XferSize    = 0U;
     hfmpi2c->pBuffPtr    = pData;
     hfmpi2c->XferCount   = Size;
     hfmpi2c->XferOptions = FMPI2C_NO_OPTION_FRAME;
