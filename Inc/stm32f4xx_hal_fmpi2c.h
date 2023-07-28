@@ -710,9 +710,9 @@ void HAL_FMPI2C_AbortCpltCallback(FMPI2C_HandleTypeDef *hfmpi2c);
   * @{
   */
 /* Peripheral State, Mode and Error functions  *********************************/
-HAL_FMPI2C_StateTypeDef HAL_FMPI2C_GetState(FMPI2C_HandleTypeDef *hfmpi2c);
-HAL_FMPI2C_ModeTypeDef  HAL_FMPI2C_GetMode(FMPI2C_HandleTypeDef *hfmpi2c);
-uint32_t             HAL_FMPI2C_GetError(FMPI2C_HandleTypeDef *hfmpi2c);
+HAL_FMPI2C_StateTypeDef HAL_FMPI2C_GetState(const FMPI2C_HandleTypeDef *hfmpi2c);
+HAL_FMPI2C_ModeTypeDef  HAL_FMPI2C_GetMode(const FMPI2C_HandleTypeDef *hfmpi2c);
+uint32_t             HAL_FMPI2C_GetError(const FMPI2C_HandleTypeDef *hfmpi2c);
 
 /**
   * @}

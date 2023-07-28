@@ -4812,7 +4812,7 @@ __weak void HAL_FMPI2C_AbortCpltCallback(FMPI2C_HandleTypeDef *hfmpi2c)
   *                the configuration information for the specified FMPI2C.
   * @retval HAL state
   */
-HAL_FMPI2C_StateTypeDef HAL_FMPI2C_GetState(FMPI2C_HandleTypeDef *hfmpi2c)
+HAL_FMPI2C_StateTypeDef HAL_FMPI2C_GetState(const FMPI2C_HandleTypeDef *hfmpi2c)
 {
   /* Return FMPI2C handle state */
   return hfmpi2c->State;
@@ -4824,7 +4824,7 @@ HAL_FMPI2C_StateTypeDef HAL_FMPI2C_GetState(FMPI2C_HandleTypeDef *hfmpi2c)
   *         the configuration information for FMPI2C module
   * @retval HAL mode
   */
-HAL_FMPI2C_ModeTypeDef HAL_FMPI2C_GetMode(FMPI2C_HandleTypeDef *hfmpi2c)
+HAL_FMPI2C_ModeTypeDef HAL_FMPI2C_GetMode(const FMPI2C_HandleTypeDef *hfmpi2c)
 {
   return hfmpi2c->Mode;
 }
@@ -4835,7 +4835,7 @@ HAL_FMPI2C_ModeTypeDef HAL_FMPI2C_GetMode(FMPI2C_HandleTypeDef *hfmpi2c)
   *              the configuration information for the specified FMPI2C.
   * @retval FMPI2C Error Code
   */
-uint32_t HAL_FMPI2C_GetError(FMPI2C_HandleTypeDef *hfmpi2c)
+uint32_t HAL_FMPI2C_GetError(const FMPI2C_HandleTypeDef *hfmpi2c)
 {
   return hfmpi2c->ErrorCode;
 }
