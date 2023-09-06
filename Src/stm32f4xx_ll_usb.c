@@ -2052,6 +2052,10 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint8_t hc_num)
         USBx_HC(hcnum)->HCCHAR |= USB_OTG_HCCHAR_CHENA;
       }
     }
+    else
+    {
+      USBx_HC(hcnum)->HCCHAR |= USB_OTG_HCCHAR_CHENA;
+    }
   }
   else
   {
