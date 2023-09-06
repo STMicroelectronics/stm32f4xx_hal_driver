@@ -1845,7 +1845,7 @@ __weak void HAL_FMPSMBUS_ErrorCallback(FMPSMBUS_HandleTypeDef *hfmpsmbus)
   *                the configuration information for the specified FMPSMBUS.
   * @retval HAL state
   */
-uint32_t HAL_FMPSMBUS_GetState(FMPSMBUS_HandleTypeDef *hfmpsmbus)
+uint32_t HAL_FMPSMBUS_GetState(const FMPSMBUS_HandleTypeDef *hfmpsmbus)
 {
   /* Return FMPSMBUS handle state */
   return hfmpsmbus->State;
@@ -1857,7 +1857,7 @@ uint32_t HAL_FMPSMBUS_GetState(FMPSMBUS_HandleTypeDef *hfmpsmbus)
   *              the configuration information for the specified FMPSMBUS.
   * @retval FMPSMBUS Error Code
   */
-uint32_t HAL_FMPSMBUS_GetError(FMPSMBUS_HandleTypeDef *hfmpsmbus)
+uint32_t HAL_FMPSMBUS_GetError(const FMPSMBUS_HandleTypeDef *hfmpsmbus)
 {
   return hfmpsmbus->ErrorCode;
 }
