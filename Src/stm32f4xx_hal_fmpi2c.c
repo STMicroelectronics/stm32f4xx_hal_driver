@@ -2197,11 +2197,11 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Receive_DMA(FMPI2C_HandleTypeDef *hfmpi2c, u
       /* Note : The FMPI2C interrupts must be enabled after unlocking current process
                 to avoid the risk of FMPI2C interrupt handle execution before current
                 process unlock */
-      /* Enable ERR, TC, STOP, NACK, TXI interrupt */
+      /* Enable ERR, TC, STOP, NACK, RXI interrupt */
       /* possible to enable all of these */
       /* FMPI2C_IT_ERRI | FMPI2C_IT_TCI | FMPI2C_IT_STOPI | FMPI2C_IT_NACKI |
         FMPI2C_IT_ADDRI | FMPI2C_IT_RXI | FMPI2C_IT_TXI */
-      FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
+      FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_RX_IT);
     }
 
     return HAL_OK;
@@ -2855,11 +2855,11 @@ HAL_StatusTypeDef HAL_FMPI2C_Mem_Read_IT(FMPI2C_HandleTypeDef *hfmpi2c, uint16_t
               to avoid the risk of FMPI2C interrupt handle execution before current
               process unlock */
 
-    /* Enable ERR, TC, STOP, NACK, RXI interrupt */
+    /* Enable ERR, TC, STOP, NACK, TXI interrupt */
     /* possible to enable all of these */
     /* FMPI2C_IT_ERRI | FMPI2C_IT_TCI | FMPI2C_IT_STOPI | FMPI2C_IT_NACKI |
       FMPI2C_IT_ADDRI | FMPI2C_IT_RXI | FMPI2C_IT_TXI */
-    FMPI2C_Enable_IRQ(hfmpi2c, (FMPI2C_XFER_TX_IT | FMPI2C_XFER_RX_IT));
+    FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
 
     return HAL_OK;
   }
@@ -3852,11 +3852,11 @@ HAL_StatusTypeDef HAL_FMPI2C_Master_Seq_Receive_DMA(FMPI2C_HandleTypeDef *hfmpi2
       /* Note : The FMPI2C interrupts must be enabled after unlocking current process
                 to avoid the risk of FMPI2C interrupt handle execution before current
                 process unlock */
-      /* Enable ERR, TC, STOP, NACK, TXI interrupt */
+      /* Enable ERR, TC, STOP, NACK, RXI interrupt */
       /* possible to enable all of these */
       /* FMPI2C_IT_ERRI | FMPI2C_IT_TCI | FMPI2C_IT_STOPI | FMPI2C_IT_NACKI |
         FMPI2C_IT_ADDRI | FMPI2C_IT_RXI | FMPI2C_IT_TXI */
-      FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
+      FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_RX_IT);
     }
 
     return HAL_OK;
@@ -5101,6 +5101,12 @@ static HAL_StatusTypeDef FMPI2C_Mem_ISR_IT(struct __FMPI2C_HandleTypeDef *hfmpi2
   else if ((FMPI2C_CHECK_FLAG(tmpITFlags, FMPI2C_FLAG_TC) != RESET) && \
            (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TCI) != RESET))
   {
+    /* Disable Interrupt related to address step */
+    FMPI2C_Disable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
+
+    /* Enable ERR, TC, STOP, NACK and RXI interrupts */
+    FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_RX_IT);
+
     if (hfmpi2c->State == HAL_FMPI2C_STATE_BUSY_RX)
     {
       direction = FMPI2C_GENERATE_START_READ;
@@ -5467,6 +5473,9 @@ static HAL_StatusTypeDef FMPI2C_Mem_ISR_DMA(struct __FMPI2C_HandleTypeDef *hfmpi
   else if ((FMPI2C_CHECK_FLAG(ITFlags, FMPI2C_FLAG_TCR) != RESET) && \
            (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TCI) != RESET))
   {
+    /* Disable Interrupt related to address step */
+    FMPI2C_Disable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
+
     /* Enable only Error interrupt */
     FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_ERROR_IT);
 
@@ -5509,6 +5518,12 @@ static HAL_StatusTypeDef FMPI2C_Mem_ISR_DMA(struct __FMPI2C_HandleTypeDef *hfmpi
   else if ((FMPI2C_CHECK_FLAG(ITFlags, FMPI2C_FLAG_TC) != RESET) && \
            (FMPI2C_CHECK_IT_SOURCE(ITSources, FMPI2C_IT_TCI) != RESET))
   {
+    /* Disable Interrupt related to address step */
+    FMPI2C_Disable_IRQ(hfmpi2c, FMPI2C_XFER_TX_IT);
+
+    /* Enable only Error and NACK interrupt for data transfer */
+    FMPI2C_Enable_IRQ(hfmpi2c, FMPI2C_XFER_ERROR_IT);
+
     if (hfmpi2c->State == HAL_FMPI2C_STATE_BUSY_RX)
     {
       direction = FMPI2C_GENERATE_START_READ;
@@ -6193,7 +6208,8 @@ static void FMPI2C_ITSlaveCplt(FMPI2C_HandleTypeDef *hfmpi2c, uint32_t ITFlags)
   __HAL_FMPI2C_CLEAR_FLAG(hfmpi2c, FMPI2C_FLAG_STOPF);
 
   /* Disable Interrupts and Store Previous state */
-  if ((tmpstate == HAL_FMPI2C_STATE_BUSY_TX) || (tmpstate == HAL_FMPI2C_STATE_BUSY_TX_LISTEN))
+  if ((tmpstate == HAL_FMPI2C_STATE_BUSY_TX) || (tmpstate == HAL_FMPI2C_STATE_BUSY_TX_LISTEN) ||
+      (tmpstate == HAL_FMPI2C_STATE_LISTEN))
   {
     FMPI2C_Disable_IRQ(hfmpi2c, FMPI2C_XFER_LISTEN_IT | FMPI2C_XFER_TX_IT);
     hfmpi2c->PreviousState = FMPI2C_STATE_SLAVE_BUSY_TX;
@@ -7186,13 +7202,13 @@ static void FMPI2C_Enable_IRQ(FMPI2C_HandleTypeDef *hfmpi2c, uint16_t InterruptR
 
     if ((InterruptRequest & FMPI2C_XFER_TX_IT) == FMPI2C_XFER_TX_IT)
     {
-      /* Enable ERR, TC, STOP, NACK and RXI interrupts */
+      /* Enable ERR, TC, STOP, NACK and TXI interrupts */
       tmpisr |= FMPI2C_IT_ERRI | FMPI2C_IT_TCI | FMPI2C_IT_STOPI | FMPI2C_IT_NACKI | FMPI2C_IT_TXI;
     }
 
     if ((InterruptRequest & FMPI2C_XFER_RX_IT) == FMPI2C_XFER_RX_IT)
     {
-      /* Enable ERR, TC, STOP, NACK and TXI interrupts */
+      /* Enable ERR, TC, STOP, NACK and RXI interrupts */
       tmpisr |= FMPI2C_IT_ERRI | FMPI2C_IT_TCI | FMPI2C_IT_STOPI | FMPI2C_IT_NACKI | FMPI2C_IT_RXI;
     }
 
