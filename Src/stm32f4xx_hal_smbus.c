@@ -181,7 +181,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-/** @addtogroup SMBUS_Private_Define
+/** @defgroup SMBUS_Private_Define SMBUS Private Define
   * @{
   */
 #define SMBUS_TIMEOUT_FLAG          35U         /*!< Timeout 35 ms             */
@@ -855,7 +855,6 @@ static void SMBUS_Flush_DR(SMBUS_HandleTypeDef *hsmbus)
 {
   /* Write a dummy data in DR to clear it */
   hsmbus->Instance->DR = 0x00U;
-
 }
 
 /**
@@ -1694,12 +1693,11 @@ void HAL_SMBUS_ER_IRQHandler(SMBUS_HandleTypeDef *hsmbus)
       /* Clear AF flag */
       __HAL_SMBUS_CLEAR_FLAG(hsmbus, SMBUS_FLAG_AF);
 
-      /* Disable EVT, BUF and ERR interrupt */
+      /* Disable EVT, BUF and ERR interrupts */
       __HAL_SMBUS_DISABLE_IT(hsmbus, SMBUS_IT_EVT | SMBUS_IT_BUF | SMBUS_IT_ERR);
 
       /* Flush data register */
       SMBUS_Flush_DR(hsmbus);
-
     }
   }
 

@@ -1011,7 +1011,7 @@ HAL_StatusTypeDef HAL_CRYP_Encrypt(CRYP_HandleTypeDef *hcryp, uint32_t *Input, u
         /* Set the phase */
         hcryp->Phase = CRYP_PHASE_PROCESS;
 
-        /* Statrt DES/TDES encryption process */
+        /* Start DES/TDES encryption process */
         status = CRYP_TDES_Process(hcryp, Timeout);
         break;
 
@@ -5339,7 +5339,7 @@ static HAL_StatusTypeDef CRYP_AESCCM_Process_DMA(CRYP_HandleTypeDef *hcryp)
 }
 
 /**
-  * @brief  Sets the payload phase in iterrupt mode
+  * @brief  Sets the payload phase in interrupt mode
   * @param  hcryp: pointer to a CRYP_HandleTypeDef structure that contains
   *         the configuration information for CRYP module
   * @retval state

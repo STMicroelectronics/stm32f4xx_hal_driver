@@ -295,7 +295,7 @@ typedef struct
 #define LL_FMPI2C_GENERATE_RESTART_7BIT_WRITE  (uint32_t)(0x80000000U | FMPI2C_CR2_START)
 /*!< Generate Restart for write request, slave 7Bit address. */
 #define LL_FMPI2C_GENERATE_RESTART_10BIT_READ  (uint32_t)(0x80000000U | FMPI2C_CR2_START | \
-                                                       FMPI2C_CR2_RD_WRN | FMPI2C_CR2_HEAD10R)
+                                                          FMPI2C_CR2_RD_WRN | FMPI2C_CR2_HEAD10R)
 /*!< Generate Restart for read request, slave 10Bit address. */
 #define LL_FMPI2C_GENERATE_RESTART_10BIT_WRITE (uint32_t)(0x80000000U | FMPI2C_CR2_START)
 /*!< Generate Restart for write request, slave 10Bit address.*/
@@ -343,7 +343,7 @@ typedef struct
 #define LL_FMPI2C_FMPSMBUS_TIMEOUTB               FMPI2C_TIMEOUTR_TEXTEN                   /*!< TimeoutB (extended clock)
                                                                                        enable bit                   */
 #define LL_FMPI2C_FMPSMBUS_ALL_TIMEOUT            (uint32_t)(FMPI2C_TIMEOUTR_TIMOUTEN | \
-                                                       FMPI2C_TIMEOUTR_TEXTEN)       /*!< TimeoutA and TimeoutB
+                                                             FMPI2C_TIMEOUTR_TEXTEN)       /*!< TimeoutA and TimeoutB
 (extended clock) enable bits */
 /**
   * @}
@@ -1082,7 +1082,7 @@ __STATIC_INLINE uint32_t LL_FMPI2C_IsEnabledSMBusPEC(const FMPI2C_TypeDef *FMPI2
   * @retval None
   */
 __STATIC_INLINE void LL_FMPI2C_ConfigSMBusTimeout(FMPI2C_TypeDef *FMPI2Cx, uint32_t TimeoutA, uint32_t TimeoutAMode,
-                                               uint32_t TimeoutB)
+                                                  uint32_t TimeoutB)
 {
   MODIFY_REG(FMPI2Cx->TIMEOUTR, FMPI2C_TIMEOUTR_TIMEOUTA | FMPI2C_TIMEOUTR_TIDLE | FMPI2C_TIMEOUTR_TIMEOUTB,
              TimeoutA | TimeoutAMode | (TimeoutB << FMPI2C_TIMEOUTR_TIMEOUTB_Pos));
@@ -2092,13 +2092,20 @@ __STATIC_INLINE uint32_t LL_FMPI2C_GetSlaveAddr(const FMPI2C_TypeDef *FMPI2Cx)
   * @retval None
   */
 __STATIC_INLINE void LL_FMPI2C_HandleTransfer(FMPI2C_TypeDef *FMPI2Cx, uint32_t SlaveAddr, uint32_t SlaveAddrSize,
-                                           uint32_t TransferSize, uint32_t EndMode, uint32_t Request)
+                                              uint32_t TransferSize, uint32_t EndMode, uint32_t Request)
 {
+  /* Declaration of tmp to prevent undefined behavior of volatile usage */
+  uint32_t tmp = ((uint32_t)(((uint32_t)SlaveAddr & FMPI2C_CR2_SADD) | \
+                             ((uint32_t)SlaveAddrSize & FMPI2C_CR2_ADD10) | \
+                             (((uint32_t)TransferSize << FMPI2C_CR2_NBYTES_Pos) & FMPI2C_CR2_NBYTES) | \
+                             (uint32_t)EndMode | (uint32_t)Request) & (~0x80000000U));
+
+  /* update CR2 register */
   MODIFY_REG(FMPI2Cx->CR2, FMPI2C_CR2_SADD | FMPI2C_CR2_ADD10 |
              (FMPI2C_CR2_RD_WRN & (uint32_t)(Request >> (31U - FMPI2C_CR2_RD_WRN_Pos))) |
              FMPI2C_CR2_START | FMPI2C_CR2_STOP | FMPI2C_CR2_RELOAD |
              FMPI2C_CR2_NBYTES | FMPI2C_CR2_AUTOEND | FMPI2C_CR2_HEAD10R,
-             SlaveAddr | SlaveAddrSize | (TransferSize << FMPI2C_CR2_NBYTES_Pos) | EndMode | Request);
+             tmp);
 }
 
 /**
@@ -2202,8 +2209,8 @@ __STATIC_INLINE void LL_FMPI2C_TransmitData8(FMPI2C_TypeDef *FMPI2Cx, uint8_t Da
   * @{
   */
 
-ErrorStatus LL_FMPI2C_Init(FMPI2C_TypeDef *FMPI2Cx, LL_FMPI2C_InitTypeDef *FMPI2C_InitStruct);
-ErrorStatus LL_FMPI2C_DeInit(FMPI2C_TypeDef *FMPI2Cx);
+ErrorStatus LL_FMPI2C_Init(FMPI2C_TypeDef *FMPI2Cx, const LL_FMPI2C_InitTypeDef *FMPI2C_InitStruct);
+ErrorStatus LL_FMPI2C_DeInit(const FMPI2C_TypeDef *FMPI2Cx);
 void LL_FMPI2C_StructInit(LL_FMPI2C_InitTypeDef *FMPI2C_InitStruct);
 
 

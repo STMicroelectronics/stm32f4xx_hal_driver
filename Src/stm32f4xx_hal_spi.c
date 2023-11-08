@@ -1223,6 +1223,15 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       hspi->Instance->DR = *((uint16_t *)hspi->pTxBuffPtr);
       hspi->pTxBuffPtr += sizeof(uint16_t);
       hspi->TxXferCount--;
+
+#if (USE_SPI_CRC != 0U)
+      /* Enable CRC Transmission */
+      if ((hspi->TxXferCount == 0U) && (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE))
+      {
+        SET_BIT(hspi->Instance->CR1, SPI_CR1_CRCNEXT);
+      }
+#endif /* USE_SPI_CRC */
+
     }
     while ((hspi->TxXferCount > 0U) || (hspi->RxXferCount > 0U))
     {
@@ -1269,6 +1278,14 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       *((__IO uint8_t *)&hspi->Instance->DR) = (*hspi->pTxBuffPtr);
       hspi->pTxBuffPtr += sizeof(uint8_t);
       hspi->TxXferCount--;
+
+#if (USE_SPI_CRC != 0U)
+      /* Enable CRC Transmission */
+      if ((hspi->TxXferCount == 0U) && (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE))
+      {
+        SET_BIT(hspi->Instance->CR1, SPI_CR1_CRCNEXT);
+      }
+#endif /* USE_SPI_CRC */
     }
     while ((hspi->TxXferCount > 0U) || (hspi->RxXferCount > 0U))
     {
@@ -3615,6 +3632,13 @@ static HAL_StatusTypeDef SPI_EndRxTransaction(SPI_HandleTypeDef *hspi,  uint32_t
   */
 static HAL_StatusTypeDef SPI_EndRxTxTransaction(SPI_HandleTypeDef *hspi, uint32_t Timeout, uint32_t Tickstart)
 {
+  /* Wait until TXE flag */
+  if(SPI_WaitFlagStateUntilTimeout(hspi, SPI_FLAG_TXE, SET, Timeout, Tickstart) != HAL_OK)
+  {
+    SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_FLAG);
+    return HAL_TIMEOUT;
+  }
+
   /* Timeout in µs */
   __IO uint32_t count = SPI_BSY_FLAG_WORKAROUND_TIMEOUT * (SystemCoreClock / 24U / 1000000U);
   /* Erratasheet: BSY bit may stay high at the end of a data transfer in Slave mode */
