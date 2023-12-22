@@ -5439,14 +5439,14 @@ typedef struct
   * @brief  Force or release AHB2 peripheral reset.
   * @{
   */
-#define __HAL_RCC_AHB2_FORCE_RESET()    (RCC->AHB2RSTR = 0x000000C0U)
-#define __HAL_RCC_AHB2_RELEASE_RESET()  (RCC->AHB2RSTR = 0x00U)
-
 #if defined(STM32F423xx)
 #define __HAL_RCC_AHB2_FORCE_RESET()   (RCC->AHB2RSTR = 0x000000D0U)
 #define __HAL_RCC_AES_FORCE_RESET()    (RCC->AHB2RSTR |= (RCC_AHB2RSTR_AESRST))
 #define __HAL_RCC_AES_RELEASE_RESET()  (RCC->AHB2RSTR &= ~(RCC_AHB2RSTR_AESRST))                                        
+#else
+#define __HAL_RCC_AHB2_FORCE_RESET()   (RCC->AHB2RSTR = 0x000000C0U)
 #endif /* STM32F423xx */ 
+#define __HAL_RCC_AHB2_RELEASE_RESET() (RCC->AHB2RSTR = 0x00U)
                                         
 #define __HAL_RCC_USB_OTG_FS_FORCE_RESET()   (RCC->AHB2RSTR |= (RCC_AHB2RSTR_OTGFSRST))
 #define __HAL_RCC_USB_OTG_FS_RELEASE_RESET() (RCC->AHB2RSTR &= ~(RCC_AHB2RSTR_OTGFSRST))
