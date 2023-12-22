@@ -395,24 +395,53 @@ HAL_StatusTypeDef HAL_DSI_Init(DSI_HandleTypeDef *hdsi, DSI_PLLInitTypeDef *PLLI
     }
   }
 
+  __HAL_DSI_ENABLE(hdsi);
+
+  /************************ Set the DSI clock parameters ************************/
+  /* Set the TX escape clock division factor */
+  hdsi->Instance->CCR &= ~DSI_CCR_TXECKDIV;
+  hdsi->Instance->CCR |= hdsi->Init.TXEscapeCkdiv;
+
   /*************************** Set the PHY parameters ***************************/
-
   /* D-PHY clock and digital enable*/
-  hdsi->Instance->PCTLR |= (DSI_PCTLR_CKE | DSI_PCTLR_DEN);
+  hdsi->Instance->PCTLR |= DSI_PCTLR_DEN;
 
-  /* Clock lane configuration */
-  hdsi->Instance->CLCR &= ~(DSI_CLCR_DPCC | DSI_CLCR_ACR);
-  hdsi->Instance->CLCR |= (DSI_CLCR_DPCC | hdsi->Init.AutomaticClockLaneControl);
+  hdsi->Instance->PCTLR |= DSI_PCTLR_CKE;
+
 
   /* Configure the number of active data lanes */
   hdsi->Instance->PCONFR &= ~DSI_PCONFR_NL;
   hdsi->Instance->PCONFR |= hdsi->Init.NumberOfLanes;
 
-  /************************ Set the DSI clock parameters ************************/
+  /* Get tick */
+  tickstart = HAL_GetTick();
+  if ((hdsi->Instance->PCONFR & DSI_PCONFR_NL) == DSI_ONE_DATA_LANE)
+  {
+    while ((hdsi->Instance->PSR & (DSI_PSR_PSS0 | DSI_PSR_PSSC)) != (DSI_PSR_PSS0 | DSI_PSR_PSSC))
+    {
+      if ((HAL_GetTick() - tickstart) > DSI_TIMEOUT_VALUE)
+      {
+        /* Process Unlocked */
+        __HAL_UNLOCK(hdsi);
 
-  /* Set the TX escape clock division factor */
-  hdsi->Instance->CCR &= ~DSI_CCR_TXECKDIV;
-  hdsi->Instance->CCR |= hdsi->Init.TXEscapeCkdiv;
+        return HAL_TIMEOUT;
+      }
+    }
+  }
+  else
+  {
+    while ((hdsi->Instance->PSR & (DSI_PSR_PSS0 | DSI_PSR_PSS1 | DSI_PSR_PSSC)) != (DSI_PSR_PSS0 | \
+                                                                                    DSI_PSR_PSS1 | DSI_PSR_PSSC))
+    {
+      if ((HAL_GetTick() - tickstart) > DSI_TIMEOUT_VALUE)
+      {
+        /* Process Unlocked */
+        __HAL_UNLOCK(hdsi);
+
+        return HAL_TIMEOUT;
+      }
+    }
+  }
 
   /* Calculate the bit period in high-speed mode in unit of 0.25 ns (UIX4) */
   /* The equation is : UIX4 = IntegerPart( (1000/F_PHY_Mhz) * 4 )          */
@@ -430,6 +459,12 @@ HAL_StatusTypeDef HAL_DSI_Init(DSI_HandleTypeDef *hdsi, DSI_PLLInitTypeDef *PLLI
   hdsi->Instance->IER[0U] = 0U;
   hdsi->Instance->IER[1U] = 0U;
   hdsi->ErrorMsk = 0U;
+
+  __HAL_DSI_DISABLE(hdsi);
+
+  /* Clock lane configuration */
+  hdsi->Instance->CLCR &= ~(DSI_CLCR_DPCC | DSI_CLCR_ACR);
+  hdsi->Instance->CLCR |= (DSI_CLCR_DPCC | hdsi->Init.AutomaticClockLaneControl);
 
   /* Initialize the error code */
   hdsi->ErrorCode = HAL_DSI_ERROR_NONE;
