@@ -3046,6 +3046,7 @@ static uint32_t ETH_Prepare_Tx_Descriptors(ETH_HandleTypeDef *heth, ETH_TxPacket
 
   ETH_BufferTypeDef  *txbuffer = pTxConfig->TxBuffer;
   uint32_t           bd_count = 0;
+  uint32_t primask_bit;
 
   /* Current Tx Descriptor Owned by DMA: cannot be used by the application  */
   if ((READ_BIT(dmatxdesc->DESC0, ETH_DMATXDESC_OWN) == ETH_DMATXDESC_OWN)
@@ -3171,14 +3172,15 @@ static uint32_t ETH_Prepare_Tx_Descriptors(ETH_HandleTypeDef *heth, ETH_TxPacket
   dmatxdesclist->PacketAddress[descidx] = dmatxdesclist->CurrentPacketAddress;
 
   dmatxdesclist->CurTxDesc = descidx;
-  /* disable the interrupt */
-  __disable_irq();
+
+  /* Enter critical section */
+  primask_bit = __get_PRIMASK();
+  __set_PRIMASK(1);
 
   dmatxdesclist->BuffersInUse += bd_count + 1U;
 
-  /* Enable interrupts back */
-  __enable_irq();
-
+  /* Exit critical section: restore previous priority mask */
+  __set_PRIMASK(primask_bit);
 
   /* Return function status */
   return HAL_ETH_ERROR_NONE;
