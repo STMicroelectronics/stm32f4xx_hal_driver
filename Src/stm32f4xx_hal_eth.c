@@ -1121,13 +1121,12 @@ HAL_StatusTypeDef HAL_ETH_ReadData(ETH_HandleTypeDef *heth, void **pAppBuff)
         heth->RxDescList.RxDataLength = 0;
       }
 
+      /* Get the Frame Length of the received packet: substruct 4 bytes of the CRC */
+      bufflength = ((dmarxdesc->DESC0 & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4U;
+
       /* Check if last descriptor */
-      bufflength = heth->Init.RxBuffLen;
       if (READ_BIT(dmarxdesc->DESC0, ETH_DMARXDESC_LS) != (uint32_t)RESET)
       {
-        /* Get the Frame Length of the received packet: substruct 4 bytes of the CRC */
-        bufflength = ((dmarxdesc->DESC0 & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4U;
-
         /* Save Last descriptor index */
         heth->RxDescList.pRxLastRxDesc = dmarxdesc->DESC0;
 
