@@ -406,6 +406,17 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   /*--------------------- ETHERNET MAC Address Configuration ------------------*/
   ETH_MACAddressConfig(heth, ETH_MAC_ADDRESS0, heth->Init.MACAddr);
 
+    /* Disable MMC Interrupts */
+    SET_BIT(heth->Instance->MACIMR, ETH_MACIMR_TSTIM | ETH_MACIMR_PMTIM);
+
+    /* Disable Rx MMC Interrupts */
+    SET_BIT(heth->Instance->MMCRIMR, ETH_MMCRIMR_RGUFM | ETH_MMCRIMR_RFAEM | \
+            ETH_MMCRIMR_RFCEM);
+
+    /* Disable Tx MMC Interrupts */
+    SET_BIT(heth->Instance->MMCTIMR, ETH_MMCTIMR_TGFM | ETH_MMCTIMR_TGFMSCM | \
+            ETH_MMCTIMR_TGFSCM);
+
   heth->ErrorCode = HAL_ETH_ERROR_NONE;
   heth->gState = HAL_ETH_STATE_READY;
 
@@ -760,16 +771,6 @@ HAL_StatusTypeDef HAL_ETH_Start_IT(ETH_HandleTypeDef *heth)
 
     /* save IT mode to ETH Handle */
     heth->RxDescList.ItMode = 1U;
-    /* Disable MMC Interrupts */
-    SET_BIT(heth->Instance->MACIMR, ETH_MACIMR_TSTIM | ETH_MACIMR_PMTIM);
-
-    /* Disable Rx MMC Interrupts */
-    SET_BIT(heth->Instance->MMCRIMR, ETH_MMCRIMR_RGUFM | ETH_MMCRIMR_RFAEM | \
-            ETH_MMCRIMR_RFCEM);
-
-    /* Disable Tx MMC Interrupts */
-    SET_BIT(heth->Instance->MMCTIMR, ETH_MMCTIMR_TGFM | ETH_MMCTIMR_TGFMSCM | \
-            ETH_MMCTIMR_TGFSCM);
 
     /* Set number of descriptors to build */
     heth->RxDescList.RxBuildDescCnt = ETH_RX_DESC_CNT;
