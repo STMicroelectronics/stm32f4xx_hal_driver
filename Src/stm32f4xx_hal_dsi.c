@@ -130,7 +130,7 @@
     all callbacks are set to the corresponding weak functions:
     examples HAL_DSI_TearingEffectCallback(), HAL_DSI_EndOfRefreshCallback().
     Exception done for MspInit and MspDeInit functions that are respectively
-    reset to the legacy weak (surcharged) functions in the HAL_DSI_Init()
+    reset to the legacy weak (overridden) functions in the HAL_DSI_Init()
     and HAL_DSI_DeInit() only when these callbacks are null (not registered beforehand).
     If not, MspInit or MspDeInit are not null, the HAL_DSI_Init() and HAL_DSI_DeInit()
     keep and use the user MspInit/MspDeInit callbacks (registered beforehand).

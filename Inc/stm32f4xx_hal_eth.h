@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal_def.h"
 
@@ -153,7 +152,7 @@ typedef struct
 
   void *pData;                     /*!< Specifies Application packet pointer to save   */
 
-} ETH_TxPacketConfig;
+} ETH_TxPacketConfigTypeDef;
 /**
   *
   */
@@ -754,7 +753,6 @@ TDES7 |                         Transmit Time Stamp High [31:0]                 
 /**
   * @}
   */
-
 
 /** @defgroup ETH_DMA_Rx_Descriptor_Bit_Definition ETH DMA Rx Descriptor Bit Definition
   * @{
@@ -1694,11 +1692,12 @@ TDES7 |                         Transmit Time Stamp High [31:0]                 
 /** @defgroup ETH_PTP_Config_Status ETH PTP Config Status
   * @{
   */
-#define HAL_ETH_PTP_NOT_CONFIGURATED        0x00000000U    /*!< ETH PTP Configuration not done */
-#define HAL_ETH_PTP_CONFIGURATED            0x00000001U    /*!< ETH PTP Configuration done     */
+#define HAL_ETH_PTP_NOT_CONFIGURED        0x00000000U    /*!< ETH PTP Configuration not done */
+#define HAL_ETH_PTP_CONFIGURED            0x00000001U    /*!< ETH PTP Configuration done     */
 /**
   * @}
   */
+
 /**
   * @}
   */
@@ -1825,7 +1824,6 @@ TDES7 |                         Transmit Time Stamp High [31:0]                 
   */
 #define __HAL_ETH_WAKEUP_EXTI_CLEAR_FLAG(__EXTI_LINE__) (EXTI->PR = (__EXTI_LINE__))
 
-
 /**
   * @brief  enable rising edge interrupt on selected EXTI line.
   * @param  __EXTI_LINE__: specifies the ETH WAKEUP EXTI sources to be disabled.
@@ -1912,7 +1910,7 @@ HAL_StatusTypeDef HAL_ETH_RegisterRxAllocateCallback(ETH_HandleTypeDef *heth,
 HAL_StatusTypeDef HAL_ETH_UnRegisterRxAllocateCallback(ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETH_RegisterRxLinkCallback(ETH_HandleTypeDef *heth, pETH_rxLinkCallbackTypeDef rxLinkCallback);
 HAL_StatusTypeDef HAL_ETH_UnRegisterRxLinkCallback(ETH_HandleTypeDef *heth);
-HAL_StatusTypeDef HAL_ETH_GetRxDataErrorCode(ETH_HandleTypeDef *heth, uint32_t *pErrorCode);
+HAL_StatusTypeDef HAL_ETH_GetRxDataErrorCode(const ETH_HandleTypeDef *heth, uint32_t *pErrorCode);
 HAL_StatusTypeDef HAL_ETH_RegisterTxFreeCallback(ETH_HandleTypeDef *heth, pETH_txFreeCallbackTypeDef txFreeCallback);
 HAL_StatusTypeDef HAL_ETH_UnRegisterTxFreeCallback(ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETH_ReleaseTxPacket(ETH_HandleTypeDef *heth);
@@ -1931,8 +1929,8 @@ HAL_StatusTypeDef HAL_ETH_RegisterTxPtpCallback(ETH_HandleTypeDef *heth, pETH_tx
 HAL_StatusTypeDef HAL_ETH_UnRegisterTxPtpCallback(ETH_HandleTypeDef *heth);
 #endif /* HAL_ETH_USE_PTP */
 
-HAL_StatusTypeDef HAL_ETH_Transmit(ETH_HandleTypeDef *heth, ETH_TxPacketConfig *pTxConfig, uint32_t Timeout);
-HAL_StatusTypeDef HAL_ETH_Transmit_IT(ETH_HandleTypeDef *heth, ETH_TxPacketConfig *pTxConfig);
+HAL_StatusTypeDef HAL_ETH_Transmit(ETH_HandleTypeDef *heth, ETH_TxPacketConfigTypeDef *pTxConfig, uint32_t Timeout);
+HAL_StatusTypeDef HAL_ETH_Transmit_IT(ETH_HandleTypeDef *heth, ETH_TxPacketConfigTypeDef *pTxConfig);
 
 HAL_StatusTypeDef HAL_ETH_WritePHYRegister(const ETH_HandleTypeDef *heth, uint32_t PHYAddr, uint32_t PHYReg,
                                            uint32_t RegValue);
@@ -1958,8 +1956,8 @@ void              HAL_ETH_TxPtpCallback(uint32_t *buff, ETH_TimeStampTypeDef *ti
   */
 /* Peripheral Control functions  **********************************************/
 /* MAC & DMA Configuration APIs  **********************************************/
-HAL_StatusTypeDef HAL_ETH_GetMACConfig(ETH_HandleTypeDef *heth, ETH_MACConfigTypeDef *macconf);
-HAL_StatusTypeDef HAL_ETH_GetDMAConfig(ETH_HandleTypeDef *heth, ETH_DMAConfigTypeDef *dmaconf);
+HAL_StatusTypeDef HAL_ETH_GetMACConfig(const ETH_HandleTypeDef *heth, ETH_MACConfigTypeDef *macconf);
+HAL_StatusTypeDef HAL_ETH_GetDMAConfig(const ETH_HandleTypeDef *heth, ETH_DMAConfigTypeDef *dmaconf);
 HAL_StatusTypeDef HAL_ETH_SetMACConfig(ETH_HandleTypeDef *heth, ETH_MACConfigTypeDef *macconf);
 HAL_StatusTypeDef HAL_ETH_SetDMAConfig(ETH_HandleTypeDef *heth, ETH_DMAConfigTypeDef *dmaconf);
 void              HAL_ETH_SetMDIOClockRange(ETH_HandleTypeDef *heth);
@@ -1969,7 +1967,7 @@ void              HAL_ETH_SetRxVLANIdentifier(ETH_HandleTypeDef *heth, uint32_t 
                                               uint32_t VLANIdentifier);
 
 /* MAC L2 Packet Filtering APIs  **********************************************/
-HAL_StatusTypeDef HAL_ETH_GetMACFilterConfig(ETH_HandleTypeDef *heth, ETH_MACFilterConfigTypeDef *pFilterConfig);
+HAL_StatusTypeDef HAL_ETH_GetMACFilterConfig(const ETH_HandleTypeDef *heth, ETH_MACFilterConfigTypeDef *pFilterConfig);
 HAL_StatusTypeDef HAL_ETH_SetMACFilterConfig(ETH_HandleTypeDef *heth, const ETH_MACFilterConfigTypeDef *pFilterConfig);
 HAL_StatusTypeDef HAL_ETH_SetHashTable(ETH_HandleTypeDef *heth, uint32_t *pHashTable);
 HAL_StatusTypeDef HAL_ETH_SetSourceMACAddrMatch(const ETH_HandleTypeDef *heth, uint32_t AddrNbr,
