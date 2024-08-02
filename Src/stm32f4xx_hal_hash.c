@@ -1836,7 +1836,7 @@ static HAL_StatusTypeDef HASH_WriteData(HASH_HandleTypeDef *hhash, uint8_t *pInB
   __IO uint32_t inputaddr = (uint32_t) pInBuffer;
   uint32_t tmp;
 
-  for (buffercounter = 0U; buffercounter < Size / 4U; buffercounter++)
+  for (buffercounter = 0U; buffercounter < (Size / 4U); buffercounter++)
   {
     /* Write input data 4 bytes at a time */
     HASH->DIN = *(uint32_t *)inputaddr;
@@ -1844,10 +1844,10 @@ static HAL_StatusTypeDef HASH_WriteData(HASH_HandleTypeDef *hhash, uint8_t *pInB
 
     /* If the suspension flag has been raised and if the processing is not about
     to end, suspend processing */
-    if ((hhash->SuspendRequest == HAL_HASH_SUSPEND) && ((buffercounter * 4 + 4U) < Size))
+    if ((hhash->SuspendRequest == HAL_HASH_SUSPEND) && (((buffercounter * 4U) + 4U) < Size))
     {
       /* wait for flag BUSY not set before  Wait for DINIS = 1*/
-      if (buffercounter * 4 >= 64U)
+      if ((buffercounter * 4U) >= 64U)
       {
         if (HASH_WaitOnFlagUntilTimeout(hhash, HASH_FLAG_BUSY, SET, HASH_TIMEOUTVALUE) != HAL_OK)
         {
@@ -1868,14 +1868,14 @@ static HAL_StatusTypeDef HASH_WriteData(HASH_HandleTypeDef *hhash, uint8_t *pInB
           /* Save current reading and writing locations of Input and Output buffers */
           hhash->pHashInBuffPtr = (uint8_t *)inputaddr;
           /* Save the number of bytes that remain to be processed at this point */
-          hhash->HashInCount    =  Size - (buffercounter * 4 + 4U);
+          hhash->HashInCount    =  Size - ((buffercounter * 4U) + 4U);
         }
         else if ((hhash->Phase == HAL_HASH_PHASE_HMAC_STEP_1) || (hhash->Phase == HAL_HASH_PHASE_HMAC_STEP_3))
         {
           /* Save current reading and writing locations of Input and Output buffers */
           hhash->pHashKeyBuffPtr  = (uint8_t *)inputaddr;
           /* Save the number of bytes that remain to be processed at this point */
-          hhash->HashKeyCount  =  Size - (buffercounter * 4 + 4U);
+          hhash->HashKeyCount  =  Size - ((buffercounter * 4U) + 4U);
         }
         else
         {
@@ -1895,17 +1895,17 @@ static HAL_StatusTypeDef HASH_WriteData(HASH_HandleTypeDef *hhash, uint8_t *pInB
 
   /* At this point, all the data have been entered to the Peripheral: exit */
 
-  if (Size % 4U != 0U)
+  if ((Size % 4U) != 0U)
   {
     if (hhash->Init.DataType == HASH_DATATYPE_16B)
     {
       /* Write remaining input data */
 
-      if (Size % 4U <= 2)
+      if ((Size % 4U) <= 2U)
       {
         HASH->DIN = (uint32_t) * (uint16_t *)inputaddr;
       }
-      if (Size % 4U == 3)
+      if ((Size % 4U) == 3U)
       {
         HASH->DIN = *(uint32_t *)inputaddr;
       }
@@ -1915,19 +1915,19 @@ static HAL_StatusTypeDef HASH_WriteData(HASH_HandleTypeDef *hhash, uint8_t *pInB
              || (hhash->Init.DataType == HASH_DATATYPE_1B))  /* byte swap or bit swap or */
     {
       /* Write remaining input data */
-      if (Size % 4U == 1)
+      if ((Size % 4U) == 1U)
       {
         HASH->DIN = (uint32_t) * (uint8_t *)inputaddr;
       }
-      if (Size % 4U == 2)
+      if ((Size % 4U) == 2U)
       {
         HASH->DIN = (uint32_t) * (uint16_t *)inputaddr;
       }
-      if (Size % 4U == 3)
+      if ((Size % 4U) == 3U)
       {
         tmp  = *(uint8_t *)inputaddr;
-        tmp |= *(uint8_t *)(inputaddr + 1U) << 8U ;
-        tmp |= *(uint8_t *)(inputaddr + 2U) << 16U;
+        tmp |= (uint32_t)*(uint8_t *)(inputaddr + 1U) << 8U;
+        tmp |= (uint32_t)*(uint8_t *)(inputaddr + 2U) << 16U;
         HASH->DIN = tmp;
       }
 
